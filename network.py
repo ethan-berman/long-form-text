@@ -6,6 +6,7 @@ from nltk import re
 #load inputs
 
 print('hello world')
+print("test")
 #forward propogation
 
 

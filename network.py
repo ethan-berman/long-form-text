@@ -22,7 +22,9 @@ for i in range(0, limit):
     if training["is_retweet"][i] == False:
         cleaned = clean_tweet(training["text"][i])
         user = training["handle"][i]
-        pruned.append({cleaned : user})
+        retweets = training["retweet_count"][i]
+        favorites = training["favorite_count"][i]
+        pruned.append({user : {(retweets, favorites) : cleaned}})
 
 print(pruned)
 #clean tweets add the text to a dictionary corresponding to which person tweeted it

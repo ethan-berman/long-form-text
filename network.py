@@ -48,8 +48,19 @@ def vectorize(tweet):
         indexes.append(bag.index(w))
         vectors.append(indexes)
     return(vectors)
-print(vectorize(pruned[0][1]))
+print(vectorize(pruned[3][1]))
 
+def onehot(vector):
+    binary = []
+    for num in vector:
+        print(num)
+        sample = [0] * len(bag)
+        sample[num[0]] = 1
+        binary.append(sample)
+    #for loop until index reaches the index of the word in the bag
+    return binary
+
+print(onehot(vectorize(pruned[0][1])))
 #the above code can be used for all three approaches, although edits should be made to the clean_tweet function
 #Next Step for bag of words is to Vectorize texts before going into pruned
 

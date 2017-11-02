@@ -11,6 +11,7 @@ from nltk.corpus import stopwords
 training = pd.read_csv('tweets2.csv', header=0, encoding='iso-8859-1')
 #print(training["text"])
 pruned = []
+bag = []
 limit = int(training["text"].size)
 
 def clean_tweet(tweet):
@@ -26,6 +27,7 @@ def clean_tweet(tweet):
    return( " ".join( good_words ))
 
 for i in range(0, limit):
+<<<<<<< HEAD
    if training["is_retweet"][i] == False:
        cleaned = clean_tweet(training["text"][i])
        #cleaned should be vectorized before appending to pruned
@@ -33,8 +35,48 @@ for i in range(0, limit):
        retweets = training["retweet_count"][i]
        favorites = training["favorite_count"][i]
        pruned.append({user : {(retweets, favorites) : cleaned}})
+=======
+    if training["is_retweet"][i] == False:
+        cleaned = clean_tweet(training["text"][i])
+        #cleaned should be vectorized before appending to pruned
+        user = training["handle"][i]
+        retweets = training["retweet_count"][i]
+        favorites = training["favorite_count"][i]
+        entry = [user, cleaned, retweets, favorites]
+        pruned.append(entry)
+>>>>>>> master
 
-print(pruned)
+#print(pruned)
+
+for line in pruned:
+    words = line[1].split()
+    for w in words:
+        if(w not in bag):
+            bag.append(w)
+
+print(bag)
+def vectorize(tweet):
+    vectors = []
+    words = tweet.split()
+    for w in words:
+        print(w)
+        indexes = []
+        indexes.append(bag.index(w))
+        vectors.append(indexes)
+    return(vectors)
+print(vectorize(pruned[3][1]))
+
+def onehot(vector):
+    binary = []
+    for num in vector:
+        print(num)
+        sample = [0] * len(bag)
+        sample[num[0]] = 1
+        binary.append(sample)
+    #for loop until index reaches the index of the word in the bag
+    return binary
+
+print(onehot(vectorize(pruned[0][1])))
 #the above code can be used for all three approaches, although edits should be made to the clean_tweet function
 #Next Step for bag of words is to Vectorize texts before going into pruned
 

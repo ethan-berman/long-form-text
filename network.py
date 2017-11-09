@@ -6,13 +6,23 @@ import pandas as pd
 import nltk
 import re
 from nltk.corpus import stopwords
+import datetime
+import time
+from nltk.stem.lancaster import LancasterStemmer
+stemmer = LancasterStemmer()
 
 #load inputs
 training = pd.read_csv('tweets2.csv', header=0, encoding='iso-8859-1')
 #print(training["text"])
 pruned = []
 bag = []
+output=[]
 limit = int(training["text"].size)
+amount_of_users=2
+bowtraining=[]
+userclass=[]
+userclass.append("realDonaldTrump")
+userclass.append("HillaryClinton")
 
 def clean_tweet(tweet):
    #improve me, i make ugly text and I get rid ofthe wrong characters
@@ -23,13 +33,13 @@ def clean_tweet(tweet):
 	words = letters.lower().split()
 	stops = set(stopwords.words("english"))
 	good_words = [w for w in words if not w in stops]
-	print(good_words)
+	#print(good_words)
 	return( " ".join(good_words))
 
    
 
 for i in range(0, limit):
-  
+   
    if training["is_retweet"][i] == False:
        cleaned = clean_tweet(training["text"][i])
         #cleaned should be vectorized before appending to pruned
@@ -38,6 +48,8 @@ for i in range(0, limit):
        favorites = training["favorite_count"][i]
        entry = [user, cleaned, retweets, favorites]
        pruned.append(entry)
+    
+
 
 #print(pruned)
 
@@ -47,7 +59,7 @@ for line in pruned:
         if(w not in bag):
             bag.append(w)
 
-# print(bag)
+#print(bag)
 
 
 def vectorize(tweet):
@@ -61,9 +73,10 @@ def vectorize(tweet):
 	return(vectors)
 
 # print(vectorize(pruned[3][1]))
+#
 
-
-
+   
+#
 def onehot(vector):
     binary = []
     for num in vector:
@@ -80,19 +93,32 @@ def onehot(vector):
 
 #clean tweets add the text to a dictionary corresponding to which person tweeted it
 #backwards propogation
+# compute sigmoid nonlinearity
+def sigmoid(x):
+    output = 1/(1+np.exp(-x))
+    return output
+
+# convert output of sigmoid function to its derivative
+def sigmoid_output_to_derivative(output):
+    return output*(1-output)
+ 
+
+
+
 
 def train(X, y, hidden_neurons=10, alpha=1, epochs=50000, dropout=False, dropout_percent=0.5):
     print("STARTING TO TRAIN")
-    print ("THIS IS HOW MANY USERS" + str(len(user)))
+
+    
     print ("Training with %s neurons, alpha:%s, dropout:%s %s" % (hidden_neurons, str(alpha), dropout, dropout_percent if dropout else '') )
-    print ("Input matrix: %sx%s    Output matrix: %sx%s" % (len(X),len(X[0]),1, len(user)) )
+    print ("Input matrix: %sx%s    Output matrix: %sx%s" % (len(X),len(X[0]),1, amount_of_users) )
 
     np.random.seed(1)
 
     last_mean_error = 1
     # randomly initialize our weights with mean 0
     synapse_0 = 2*np.random.random((len(X[0]), hidden_neurons)) - 1
-    synapse_1 = 2*np.random.random((hidden_neurons, len(user))) - 1
+    synapse_1 = 2*np.random.random((hidden_neurons, amount_of_users)) - 1
 
     prev_synapse_0_weight_update = np.zeros_like(synapse_0)  #Return an array of zeros with the same shape and type as a given array.
     prev_synapse_1_weight_update = np.zeros_like(synapse_1)
@@ -163,9 +189,34 @@ def train(X, y, hidden_neurons=10, alpha=1, epochs=50000, dropout=False, dropout
 
 
 
-X = np.array(pruned)
+output_empty = [0] * amount_of_users
+
+for prune in pruned:
+        # initialize our bag of words
+        tempbag = []
+        # list of tokenized words for the pattern
+        pattern_words = prune[1]
+        # stem each word
+        pattern_words = [stemmer.stem(word.lower()) for word in pattern_words]
+        # create our bag of words array
+        for w in bag:
+            tempbag.append(1) if w in pattern_words else tempbag.append(0)
+
+        bowtraining.append(tempbag)
+        # output is a '0' for each tag and '1' for current tag
+        output_row = list(output_empty)
+       
+        output_row[userclass.index(prune[0])] = 1
+
+        
+        output.append(output_row)
+        print(str(output_row))
+
+print("this is bowtraining" +str(bowtraining))
+#pruned is a list of training data
+
+X = np.array(bowtraining)
 y = np.array(output)
-output_empty = [0] * len(user)
 
 start_time = time.time()
 

@@ -8,6 +8,7 @@ import re
 from nltk.corpus import stopwords
 import datetime
 import time
+import json
 from nltk.stem.lancaster import LancasterStemmer
 stemmer = LancasterStemmer()
 
@@ -106,7 +107,7 @@ def sigmoid_output_to_derivative(output):
 
 
 
-def train(X, y, hidden_neurons=10, alpha=1, epochs=50000, dropout=False, dropout_percent=0.5):
+def train(X, y, hidden_neurons=10, alpha=1, epochs=50000, dropout=False, dropout_percent=0.5): 
     print("STARTING TO TRAIN")
 
     
@@ -140,14 +141,14 @@ def train(X, y, hidden_neurons=10, alpha=1, epochs=50000, dropout=False, dropout
         # how much did we miss the target value?
         layer_2_error = y - layer_2
 
-        if (j% 10000) == 0 and j > 5000:
+        if (j% 200) == 0 and j > 0:
             # if this 10k iteration's error is greater than the last iteration, break out
             if np.mean(np.abs(layer_2_error)) < last_mean_error:
-                print ("delta after "+str(j)+" iterations:" + str(np.mesan(np.abs(layer_2_error))) )
+                print ("delta after "+str(j)+" iterations:" + str(np.mean(np.abs(layer_2_error))) )
                 last_mean_error = np.mean(np.abs(layer_2_error))
             else:
                 print ("break:", np.mean(np.abs(layer_2_error)), ">", last_mean_error )
-                break
+                #break
                 
         # in what direction is the target value?
         # were we really sure? if so, don't change too much.
@@ -210,7 +211,7 @@ for prune in pruned:
 
         
         output.append(output_row)
-        print(str(output_row))
+       # print(str(output_row))
 
 print("this is bowtraining" +str(bowtraining))
 #pruned is a list of training data
@@ -220,7 +221,9 @@ y = np.array(output)
 
 start_time = time.time()
 
-train(X, y, hidden_neurons=20, alpha=0.1, epochs=100000, dropout=False, dropout_percent=0.2)
+for a in range(0, 1,.1):
+    for n in range(0,7000,1000)
+        train(X, y, hidden_neurons=n, alpha=a, epochs=1000, dropout=False, dropout_percent=0.2)
 
 elapsed_time = time.time() - start_time
 print ("processing time:", elapsed_time, "seconds")

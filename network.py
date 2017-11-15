@@ -10,6 +10,7 @@ import datetime
 import time
 import json
 from nltk.stem.lancaster import LancasterStemmer
+from collections import Counter
 stemmer = LancasterStemmer()
 
 #load inputs
@@ -43,7 +44,7 @@ def clean_tweet(tweet):
 	return( " ".join(good_words))
 
 
-for i in range(0, limit):
+for i in range(0, 100): #200 should be limit
    
    if training["is_retweet"][i] == False:
 	   cleaned = clean_tweet(training["text"][i])
@@ -65,7 +66,10 @@ for line in pruned:
 			bag.append(w)
 
 #print(bag)
-bag=bag[:500]
+#bag=bag[:500]
+c=Counter(bag).most_common(500)
+bag=[word[0] for word in c]
+
 print("new bag" + str(bag))
 
 
@@ -101,10 +105,13 @@ def makebagofwords(pruned):
 	for prune in pruned:
 		# initialize our bag of words
 		tempbag = []
+
+		
 		# list of tokenized words for the pattern
 		pattern_words = prune[1]
 		# stem each word
 		pattern_words = [stemmer.stem(word.lower()) for word in pattern_words]
+		
 		# create our bag of words array
 		for w in bag:
 			tempbag.append(1) if w in pattern_words else tempbag.append(0)
@@ -120,6 +127,7 @@ def makebagofwords(pruned):
 	#print ("saved synapses to:", synapse_file)
 
 		# output is a '0' for each tag and '1' for current tag
+		print(bowtraining1)
 		return bowtraining1
 
 def makeoutputs(pruned,output_empty):
@@ -196,7 +204,7 @@ def train(X, y, hidden_neurons=10, alpha=1, epochs=50000, dropout=False, dropout
 		# how much did we miss the target value?
 		layer_2_error = y - layer_2
 
-		if (j% 200) == 0 and j > 0:
+		if (j% 1000) == 0 and j > 500:
 			# if this 10k iteration's error is greater than the last iteration, break out
 			if np.mean(np.abs(layer_2_error)) < last_mean_error:
 				print ("delta after "+str(j)+" iterations:" + str(np.mean(np.abs(layer_2_error))) )
@@ -247,7 +255,7 @@ def train(X, y, hidden_neurons=10, alpha=1, epochs=50000, dropout=False, dropout
 
 output_empty = [0] * amount_of_users
 
-
+print(pruned)
 bowtraining=makebagofwords(pruned)
 output=makeoutputs(pruned,output_empty)
 
@@ -269,14 +277,15 @@ with open(outputs_file) as data_file:
 
 #ßprint("this is outputs" +str(output))
 
-X = np.array(bowtraining[:500])
-y = np.array(output[:500])
+X = np.array(bowtraining)
+y = np.array(output)
 
 start_time = time.time()
 
-#for a in range(1, 10, 1):
-	#for n in range(1,7000,1000):
-train(X, y, hidden_neurons=100, alpha=1, epochs=1000, dropout=False, dropout_percent=0.2)
+#for a in range(5, 10, 2):
+
+train(X, y, hidden_neurons=700, alpha=0.8, epochs=10000, dropout=False, dropout_percent=0.2) #100,000 for epochs in imdb
+		#150 neurons was pretty good
 
 
 elapsed_time = time.time() - start_time

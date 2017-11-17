@@ -6,7 +6,9 @@ import pandas as pd
 import nltk
 import re
 from nltk.corpus import stopwords
-
+from gensim.models import Word2Vec
+from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt
 #load inputs
 training = pd.read_csv('tweets2.csv', header=0, encoding='iso-8859-1')
 #print(training["text"])
@@ -29,8 +31,7 @@ def clean_tweet(tweet):
    
 
 for i in range(0, limit):
-  
-   if training["is_retweet"][i] == False:
+    if training["is_retweet"][i] == False:
        cleaned = clean_tweet(training["text"][i])
         #cleaned should be vectorized before appending to pruned
        user = training["handle"][i]
@@ -48,7 +49,9 @@ for line in pruned:
             bag.append(w)
 
 # print(bag)
-
+def tokenize(tweet):
+    words = tweet.split()
+    return(words)
 
 def vectorize(tweet):
 	vectors = []
@@ -65,16 +68,52 @@ def vectorize(tweet):
 
 
 def onehot(vector):
-    binary = []
+    binary = [0] * len(bag) 
     for num in vector:
     	print(num)
-    	sample = [0] * len(bag)
-    	sample[num[0]] = 1
-    	binary.append(sample)
+    	binary[num[0]] = 1
     #for loop until index reaches the index of the word in the bag
     return binary
 
-#print(onehot(vectorize(pruned[0][1])))
+cleaned_tweets = []
+trump_tweets = []
+clinton_tweets = []
+for entry in pruned:
+    cleaned_tweets.append(tokenize(entry[1]))
+    if entry[0] == "realDonaldTrump":
+        trump_tweets.append(tokenize(entry[1]))
+    else:
+        clinton_tweets.append(tokenize(entry[1]))
+#print(cleaned_tweets)
+model = Word2Vec(cleaned_tweets, min_count=1)
+#print(model)
+trump_model = Word2Vec(trump_tweets, min_count=1)
+clinton_model = Word2Vec(clinton_tweets, min_count=1)
+print(trump_tweets)
+words = list(model.wv.vocab)
+#print(words)
+#print(model['trump'])
+Y = model[trump_model.wv.vocab]
+Z = model[clinton_model.wv.vocab]
+
+X = model[model.wv.vocab]
+pca = PCA(n_components=2)
+
+trump_res = pca.fit_transform(Y)
+clinton_res = pca.fit_transform(Z)
+result = pca.fit_transform(X)
+plt.scatter(trump_res[:,0], trump_res[:,1])
+plt.scatter(clinton_res[:,0], clinton_res[:,1])
+'''
+words = list(model.wv.vocab)
+for i, word in enumerate(words):
+    plt.annotate(word, xy=(result[i,0], result[i,1]))
+model.save('model.bin')
+'''
+#plt.show()
+#new_model = Word2Vec.load('model.bin')
+#print(new_model)
+#print(onehot(vectorize(pruned[245][1])))
 #the above code can be used for all three approaches, although edits should be made to the clean_tweet function
 #Next Step for bag of words is to Vectorize texts before going into pruned
 

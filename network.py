@@ -25,7 +25,7 @@ def clean_tweet(tweet):
 	words = letters.lower().split()
 	stops = set(stopwords.words("english"))
 	good_words = [w for w in words if not w in stops]
-	print(good_words)
+	#print(good_words)
 	return( " ".join(good_words))
 
    
@@ -70,7 +70,7 @@ def vectorize(tweet):
 def onehot(vector):
     binary = [0] * len(bag) 
     for num in vector:
-    	print(num)
+    	#print(num)
     	binary[num[0]] = 1
     #for loop until index reaches the index of the word in the bag
     return binary
@@ -89,7 +89,7 @@ model = Word2Vec(cleaned_tweets, min_count=1)
 #print(model)
 trump_model = Word2Vec(trump_tweets, min_count=1)
 clinton_model = Word2Vec(clinton_tweets, min_count=1)
-print(trump_tweets)
+#print(trump_tweets)
 words = list(model.wv.vocab)
 #print(words)
 #print(model['trump'])
@@ -98,19 +98,29 @@ Z = model[clinton_model.wv.vocab]
 
 X = model[model.wv.vocab]
 pca = PCA(n_components=2)
-
+print(model['america'])
 trump_res = pca.fit_transform(Y)
 clinton_res = pca.fit_transform(Z)
 result = pca.fit_transform(X)
 plt.scatter(trump_res[:,0], trump_res[:,1])
 plt.scatter(clinton_res[:,0], clinton_res[:,1])
-'''
 words = list(model.wv.vocab)
 for i, word in enumerate(words):
     plt.annotate(word, xy=(result[i,0], result[i,1]))
 model.save('model.bin')
-'''
-#plt.show()
+plt.show()
+def build(tweet):
+    location = []
+    for index in tweet:
+        #find vector value for every word in tweet, take the sum
+        location.extend(model[bag[index[0]]])
+    return(location)
+print(build(vectorize(pruned[0][1])))
+spaced = []
+for tweet in pruned:
+    spaced.append(build(vectorize(tweet[1])))
+
+#print(model['trump'])
 #new_model = Word2Vec.load('model.bin')
 #print(new_model)
 #print(onehot(vectorize(pruned[245][1])))

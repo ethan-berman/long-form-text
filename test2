@@ -1,0 +1,23 @@
+import numpy as np
+import pandas as pd
+import nltk
+from nltk import re
+
+#load inputs
+
+
+print("yellow did this work")
+
+
+#forward propogation
+
+
+#calculate error
+
+
+
+#backwards propogation
+
+
+
+#classify
